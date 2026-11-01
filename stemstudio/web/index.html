@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>声音分轨工作台</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="/" aria-label="声音分轨工作台首页"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span>声音分轨工作台<small>STEM STUDIO</small></span></a>
+    <div class="header-status"><span class="local-dot"></span>本机处理<span class="divider"></span><span id="saveStatus" role="status">工程自动保存</span></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <section class="panel import-panel">
+        <div class="section-heading"><span class="step-number">01</span><h2>导入录音</h2></div>
+        <button id="importButton" class="drop-zone" type="button"><span class="upload-icon" aria-hidden="true">＋</span><strong>选择或拖入音频</strong><span>WAV · MP3 · M4A · FLAC</span></button>
+        <input id="fileInput" type="file" accept="audio/*,.m4a,.mp4,.flac,.wma,.opus" hidden>
+        <p class="micro">支持单声道与立体声。最长 10 分钟，较长录音建议分段。</p>
+      </section>
+      <section class="panel separation-panel">
+        <div class="section-heading"><span class="step-number">02</span><h2>分离声音</h2></div>
+        <label class="field-label" for="methodSelect">分离方式</label>
+        <select id="methodSelect"><option value="demucs">神经网络 · 六类音轨</option><option value="practice">练习录音 · 节拍 + 乐器</option><option value="features">频谱特征 · 人工辨识</option></select>
+        <p id="methodHint" class="method-hint">预训练模型提取人声、鼓、贝斯、吉他、钢琴与其他候选轨。</p>
+        <div id="componentField" class="field-row" hidden><label for="componentCount">候选音轨数</label><select id="componentCount"><option>2</option><option>3</option><option>4</option><option>5</option><option selected>6</option><option>7</option><option>8</option></select></div>
+        <button id="separateButton" class="button primary full" type="button" disabled>开始分轨 <span aria-hidden="true">→</span></button>
+        <button id="cancelButton" class="button subtle full" type="button" hidden>取消处理</button>
+        <div class="progress-box" id="progressBox" aria-live="polite"><div class="progress-label"><span id="jobStatus">等待导入音频</span><span id="progressNumber"></span></div><div class="progress-track"><div id="progressBar"></div></div></div>
+      </section>
+      <section class="panel projects-panel">
+        <div class="section-heading"><h2>已保存工程</h2><span id="projectCount" class="count">0</span></div>
+        <div id="projectList" class="project-list"><p class="micro">导入后自动保存在本机。</p></div>
+      </section>
+      <div class="sidebar-foot">模型标签是候选名称。<br>用你的耳朵确认，再决定留下什么。</div>
+    </aside>
+    <main class="workspace">
+      <div class="workspace-heading"><div class="project-heading"><div class="eyebrow">分轨 · 试听 · 混音</div><input id="projectName" aria-label="工程名称" value="未打开工程" readonly><p id="audioInfo">导入录音后，分离出的音轨会出现在这里。</p></div><div class="export-tools"><select id="exportFormat" aria-label="导出格式"><option value="wav">WAV · 无损</option><option value="flac">FLAC · 无损</option><option value="mp3">MP3 · 320k</option></select><button id="exportMixButton" class="button primary" disabled>导出当前混音</button><button id="exportStemsButton" class="button secondary" disabled title="导出所有原始音轨及混音设置">导出音轨包</button></div></div>
+      <div id="errorBanner" class="error-banner" role="alert" hidden><span id="errorText"></span><button id="dismissError" aria-label="关闭错误提示">×</button></div>
+      <div id="exportResult" class="export-result" hidden><span id="exportMessage"></span><a id="downloadLink" class="button secondary">下载文件</a></div>
+      <section class="transport-panel" aria-label="播放与时间轴">
+        <div class="transport-controls"><div class="transport-left"><button id="playButton" class="play-button" aria-label="播放" disabled><span id="playIcon" aria-hidden="true">▶</span></button><button id="rewindButton" class="icon-button" title="回到开头" aria-label="回到开头" disabled>↤</button><div class="time-readout"><span id="currentTime">0:00.00</span><span class="time-separator">/</span><span id="durationTime">0:00.00</span></div></div><div class="mode-tabs" role="group" aria-label="试听来源"><button id="mixMode" class="active" disabled>当前混音</button><button id="originalMode" disabled>原始录音</button></div><label class="monitor-volume" title="只调整试听音量，不影响导出文件"><span>监听音量</span><input id="monitorVolume" type="range" min="0" max="1" step="0.01" value="1" aria-label="监听音量"></label></div>
+        <div id="overview" class="overview waveform-container" title="点击跳转播放位置"><canvas id="overviewCanvas" aria-hidden="true"></canvas><div class="playhead"></div><div id="overviewPlaceholder">尚未载入音频</div></div>
+        <input id="seekBar" type="range" min="0" max="1" step="0.01" value="0" aria-label="播放位置" disabled>
+        <div class="transport-footer"><span id="listeningStatus">准备就绪</span><span>空格 播放 / 暂停<span class="footer-separator">·</span>点击波形跳转</span></div>
+      </section>
+      <div class="listen-guidance" id="listenGuidance"><span class="info-symbol">i</span><p><strong>先独听，辨识后再静音。</strong>全部轨开启、音量 100% 时恢复原音；关闭某条轨后，才会从混音中移除它。</p></div>
+      <div class="tracks-toolbar"><div class="tracks-title"><h2>音轨</h2><span id="trackCount" class="count">0</span></div><div class="track-actions"><button id="clearSoloButton" class="button small subtle" disabled>取消独听</button><button id="enableAllButton" class="button small subtle" disabled>全部开启</button><button id="undoButton" class="button small secondary" disabled>撤销上次分离</button></div></div>
+      <div id="tracks" class="tracks"><div class="empty-state" id="emptyState"><div class="empty-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><h3>把混在一起的声音，交给你逐轨控制</h3><p>导入录音并开始分轨。独听每条音轨，命名为你听到的声音，<br>然后静音不需要的部分，保存新的混音。</p></div></div>
+      <section class="split-panel" id="splitPanel" hidden><div class="split-description"><div class="eyebrow">继续拆分选中音轨</div><strong id="selectedTrackName"></strong><p>一条轨中仍有多种声音时，可继续拆分并逐轨辨识。</p></div><div class="split-controls"><select id="splitMethod" aria-label="再次拆分方式"><option value="features">按频谱特征拆分</option><option value="repeating">提取重复节拍候选</option></select><select id="splitComponents" aria-label="再次拆分音轨数"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select><button id="splitButton" class="button secondary">拆分这条音轨</button></div></section>
+      <p id="modelNotes" class="model-notes"></p>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>
