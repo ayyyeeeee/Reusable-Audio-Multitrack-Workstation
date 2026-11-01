@@ -1,0 +1,38 @@
+# Python environments and caches
+.venv/
+.deps/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Recordings, saved projects, exports and model downloads
+音轨工程/
+*.wav
+*.m4a
+*.mp3
+*.flac
+*.ogg
+*.aac
+*.mp4
+*.zip
+*.npy
+*.npz
+*.th
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.download
+
+# Local development and publication bookkeeping
+.analysis/
+.publish/
+.release/
+AGENTS.md
+TASK_STATE.md
+.env
+.env.*
+*.log
+.DS_Store
+Thumbs.db
